@@ -79,7 +79,7 @@ def handle_message(event):
                 'description': 'upload in Imgur'}
                 files = {"image": message_content}
                 headers = {'Authorization': f'Bearer {IMGUR_ACCESS_TOKEN}'}
-                response = requests.request("POST", url, headers=headers, data=payload, files=files)
+                response = requests.request('POST', url, headers=headers, data=payload, files=files)
                 response_data = response.json()
                 if response_data['success']:
                     imgur_url = response_data['data']['link']
@@ -102,7 +102,7 @@ def handle_message(event):
                     )
                     group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
                 # 回傳推送成功訊息
-                reply_text = f'圖片:{imgur_url}\n，已成功發送至群組:{','.join(group_name_array)}'
+                reply_text = f'圖片:{imgur_url}\n已成功發送至群組:{",".join(group_name_array)}'
                 line_bot_api.reply_message_with_http_info(
                     ReplyMessageRequest(
                         reply_token=event.reply_token,
@@ -125,23 +125,23 @@ def handle_message(event):
         line_bot_api = MessagingApi(api_client)
         reply_text = None
 
-        if event.source.type == "user":
+        if event.source.type == 'user':
             user_id = event.source.user_id
             if user_id in authorized_user_set:
-                if event.message.text == "@註銷@":
+                if event.message.text == '@註銷@':
                     authorized_user_set.remove(event.source.user_id)
                     reply_text = '已註銷上傳管理者'
-                elif event.message.text == "@查看管理者@":
+                elif event.message.text == '@查看管理者@':
                     authorized_user_name_array = []
                     for user_id in authorized_user_set:
                         authorized_user_name_array.append(line_bot_api.get_profile(user_id).display_name)
-                    reply_text = f'上傳管理者:{','.join(authorized_user_name_array)}'
-                elif event.message.text == "@查看群組@":
+                    reply_text = f'上傳管理者:{",".join(authorized_user_name_array)}'
+                elif event.message.text == '@查看群組@':
                     group_name_array = []
                     for group_id in group_id_set:
                         group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
-                    reply_text = f'群組:{','.join(group_name_array)}'
-            if event.message.text == "@註冊@":
+                    reply_text = f'群組:{",".join(group_name_array)}'
+            if event.message.text == '@註冊@':
                 authorized_user_set.add(user_id)
                 reply_text = '註冊為上傳管理者'
                 
