@@ -8,7 +8,7 @@
   - Channel_Access_Token = '取得之Channel_Access_Token'
   - Channel_Secret = '取得之Channel_Secret'
   - Imgur_Access_Token = '取得之Imgur_Access_Token'
- #### 4. 開啟Use webhook功能，並部署於雲端，將Webhook settings設為部署服務之網址，
+ #### 4. 開啟Use webhook功能，並部署於雲端，將Webhook settings設為部署服務之網址'{服務網址}/callback'，
  
  ## 使用：
  
