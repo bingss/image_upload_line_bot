@@ -25,7 +25,6 @@ from linebot.v3.webhooks import (
 )
 import os
 import requests
-import idFileManager
 
 app = Flask(__name__)
 configuration = Configuration(access_token=os.getenv('Channel_Access_Token'))
@@ -33,11 +32,12 @@ line_handler = WebhookHandler(os.getenv('Channel_Secret'))
 
 # Imgur API
 IMGUR_ACCESS_TOKEN = os.getenv('Imgur_Access_Token')
-
-# 儲存id txt path
-managerid_filepath = "/tmp/managerid_file.txt"
-group_id_filepath = "/tmp/group_id_file.txt"
-
+# 設定目標群組的 Group ID
+# GROUP_ID = os.getenv('GROUP_ID')
+group_id_set = set()
+# 限制只有特定使用者且非群組內訊息才能上傳圖片
+# UPLOAD_USER_LINEID = os.getenv('UPLOAD_USER_LINEID')
+authorized_user_set = set()
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -59,10 +59,8 @@ def callback():
 @line_handler.add(MessageEvent, message=(ImageMessageContent))
 def handle_message(event):
     with ApiClient(configuration) as api_client:
-        group_id_set = idFileManager.read_all_ids(group_id_filepath)
-        managerid_set = idFileManager.read_all_ids(managerid_filepath)
         # 限制只有特定使用者且非群組內訊息才能上傳圖片
-        if event.source.type != "user" or managerid_set.__contains__(event.source.user_id) == False:
+        if event.source.type != "user" or authorized_user_set.__contains__(event.source.user_id) == False:
             return
         
         line_bot_api = MessagingApi(api_client)
@@ -125,18 +123,16 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         reply_text = None
-        group_id_set = idFileManager.read_all_ids(group_id_filepath)
-        managerid_set = idFileManager.read_all_ids(managerid_filepath)
-        
+
         if event.source.type == 'user':
             user_id = event.source.user_id
-            if user_id in managerid_set:
+            if user_id in authorized_user_set:
                 if event.message.text == '@註銷@':
-                    idFileManager.delete_id(event.source.user_id, managerid_filepath)
+                    authorized_user_set.remove(event.source.user_id)
                     reply_text = '已註銷上傳管理者'
                 elif event.message.text == '@查看管理者@':
                     authorized_user_name_array = []
-                    for user_id in managerid_set:
+                    for user_id in authorized_user_set:
                         authorized_user_name_array.append(line_bot_api.get_profile(user_id).display_name)
                     reply_text = f'上傳管理者:{",".join(authorized_user_name_array)}'
                 elif event.message.text == '@查看群組@':
@@ -145,7 +141,7 @@ def handle_message(event):
                         group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
                     reply_text = f'群組:{",".join(group_name_array)}'
             if event.message.text == '@註冊@':
-                idFileManager.save_id(user_id, managerid_filepath)
+                authorized_user_set.add(user_id)
                 reply_text = '註冊為上傳管理者'
                 
         if reply_text != None:
@@ -164,7 +160,7 @@ def handle_join(event):
         # 獲取群組 ID
         if event.source.type == "group":
             group_id = event.source.group_id
-            idFileManager.save_id(group_id, group_id_filepath)
+            group_id_set.add(group_id)
             print(f"Bot 已加入群組，群組 ID: {group_id}")
 
     except Exception as e:
@@ -173,16 +169,12 @@ def handle_join(event):
 @line_handler.add(LeaveEvent)
 def handle_leave(event):
     try:
-        # group_id_set = idFileManager.read_all_ids(group_id_filepath)
-        # # 獲取群組 ID
-        # if event.source.type == "group":
-        #     group_id = event.source.group_id
-        #     if group_id in group_id_set:
-        #         group_id_set.remove(group_id)
-
-        group_id = event.source.group_id
-        idFileManager.delete_id(group_id, group_id_filepath)
-        print(f"Bot 已離開群組，群組 ID: {group_id}")
+        # 獲取群組 ID
+        if event.source.type == "group":
+            group_id = event.source.group_id
+            if group_id in group_id_set:
+                group_id_set.remove(group_id)
+            print(f"Bot 已離開群組，群組 ID: {group_id}")
     except Exception as e:
         print(f"Error: {e}")
 
