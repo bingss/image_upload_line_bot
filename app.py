@@ -135,12 +135,12 @@ def handle_message(event):
                     authorized_user_name_array = []
                     for user_id in authorized_user_set:
                         authorized_user_name_array.append(line_bot_api.get_profile(user_id).display_name)
-                    reply_text = f'上傳管理者:{'、'.join(authorized_user_name_array)}'
+                    reply_text = f'上傳管理者:{','.join(authorized_user_name_array)}'
                 elif event.message.text == "@查看群組@":
                     group_name_array = []
                     for group_id in group_id_set:
                         group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
-                    reply_text = f'群組:{'、'.join(group_name_array)}'
+                    reply_text = f'群組:{','.join(group_name_array)}'
             if event.message.text == "@註冊@":
                 authorized_user_set.add(user_id)
                 reply_text = '註冊為上傳管理者'
