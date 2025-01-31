@@ -1,15 +1,15 @@
  ## 功能：
  #### 以個人帳號上傳圖片至官方帳號，將自動將圖片上傳至imgur圖床，並推送至有加入該官方帳號之群組。
- #### 注意:免費推送訊息200則/月
+ #### 注意:每月免費推送至群組或帳號訊息為200則。
 
  ## 安裝：
- #### 1.LINE取得Channel_Secret及Channel_Access_Token
- #### 2.Imgur取得Imgur_Access_Token(需使用POSTMAN：參考https://vocus.cc/article/66628ec1fd89780001f89f7f)
+ #### 1.LINE取得Channel_Secret及Channel_Access_Token。
+ #### 2.Imgur取得Imgur_Access_Token(需使用POSTMAN：參考https://vocus.cc/article/66628ec1fd89780001f89f7f)。
  #### 3.環境變數設定為:
   - Channel_Access_Token = '取得之Channel_Access_Token'
   - Channel_Secret = '取得之Channel_Secret'
   - Imgur_Access_Token = '取得之Imgur_Access_Token'
- #### 4. 開啟Use webhook功能，並部署於雲端，將Webhook settings設為部署服務之網址'{服務網址}/callback'，
+ #### 4. 開啟Use webhook功能，並部署於雲端，將Webhook settings設為部署服務之網址'{服務網址}/callback'。
  
  ## 使用：
  - 官方帳號加入至群組後，自動加入/註銷該群組為推送圖片之範圍
