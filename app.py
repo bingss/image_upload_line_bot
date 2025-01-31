@@ -23,7 +23,6 @@ from linebot.v3.webhooks import (
     TextMessageContent,
     ImageMessageContent
 )
-from imgurpython import ImgurClient
 import os
 import requests
 
