@@ -37,7 +37,7 @@ IMGUR_ACCESS_TOKEN = os.getenv('Imgur_Access_Token')
 # Google Sheets 設定
 client = gspread.service_account_from_dict( json.loads(os.getenv('Google_Credentials'), strict=False)  )
 # client = gspread.service_account(filename='credentials.json')
-sheet = client.open_by_key(os.getenv('Google_Sheet_URL'))
+sheet = client.open_by_key(os.getenv('Google_Sheet_Key'))
 manager_id_sheet = sheet.get_worksheet(0)
 group_id_sheet = sheet.get_worksheet(1)
 
