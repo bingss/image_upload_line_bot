@@ -35,8 +35,8 @@ line_handler = WebhookHandler(os.getenv('Channel_Secret'))
 IMGUR_ACCESS_TOKEN = os.getenv('Imgur_Access_Token')
 
 # 儲存id txt path
-managerid_filepath = "./tmp/managerid_file.txt"
-group_id_filepath = "./tmp/group_id_file.txt"
+managerid_filepath = "/tmp/managerid_file.txt"
+group_id_filepath = "/tmp/group_id_file.txt"
 
 
 @app.route("/callback", methods=['POST'])
