@@ -35,8 +35,8 @@ line_handler = WebhookHandler(os.getenv('Channel_Secret'))
 IMGUR_ACCESS_TOKEN = os.getenv('Imgur_Access_Token')
 
 # 儲存id txt path
-managerid_filepath = "./data/managerid_file.txt"
-group_id_filepath = "./data/group_id_file.txt"
+managerid_filepath = "./tmp/managerid_file.txt"
+group_id_filepath = "./tmp/group_id_file.txt"
 
 
 @app.route("/callback", methods=['POST'])
@@ -179,7 +179,7 @@ def handle_leave(event):
         #     group_id = event.source.group_id
         #     if group_id in group_id_set:
         #         group_id_set.remove(group_id)
-        
+
         group_id = event.source.group_id
         idFileManager.delete_id(group_id, group_id_filepath)
         print(f"Bot 已離開群組，群組 ID: {group_id}")
