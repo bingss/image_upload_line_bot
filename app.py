@@ -102,7 +102,7 @@ def handle_message(event):
                     )
                     group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
                 # 回傳推送成功訊息
-                reply_text = f'圖片:{imgur_url}\n，已成功發送至群組:{'、'.join(group_name_array)}'
+                reply_text = f'圖片:{imgur_url}\n，已成功發送至群組:{','.join(group_name_array)}'
                 line_bot_api.reply_message_with_http_info(
                     ReplyMessageRequest(
                         reply_token=event.reply_token,
