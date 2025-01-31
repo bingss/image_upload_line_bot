@@ -1,4 +1,4 @@
-*.txt
+ngrok指令.txt
 .vscode
 __pycache__
 .env
