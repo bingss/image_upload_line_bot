@@ -23,7 +23,9 @@ from linebot.v3.webhooks import (
     TextMessageContent,
     ImageMessageContent
 )
+import gspread
 import os
+import json
 import requests
 
 app = Flask(__name__)
@@ -32,12 +34,12 @@ line_handler = WebhookHandler(os.getenv('Channel_Secret'))
 
 # Imgur API
 IMGUR_ACCESS_TOKEN = os.getenv('Imgur_Access_Token')
-# 設定目標群組的 Group ID
-# GROUP_ID = os.getenv('GROUP_ID')
-group_id_set = set()
-# 限制只有特定使用者且非群組內訊息才能上傳圖片
-# UPLOAD_USER_LINEID = os.getenv('UPLOAD_USER_LINEID')
-authorized_user_set = set()
+# Google Sheets 設定
+client = gspread.service_account_from_dict( json.loads(os.getenv('Google_Credentials'), strict=False)  )
+# client = gspread.service_account(filename='credentials.json')
+sheet = client.open_by_url(os.getenv('Google_Sheet_URL'))
+manager_id_sheet = sheet.get_worksheet(0)
+group_id_sheet = sheet.get_worksheet(1)
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -59,8 +61,11 @@ def callback():
 @line_handler.add(MessageEvent, message=(ImageMessageContent))
 def handle_message(event):
     with ApiClient(configuration) as api_client:
+        group_id_set = set(group_id_sheet.col_values(1))
+        manager_id_set = set(manager_id_sheet.col_values(1))
+
         # 限制只有特定使用者且非群組內訊息才能上傳圖片
-        if event.source.type != "user" or authorized_user_set.__contains__(event.source.user_id) == False:
+        if event.source.type != "user" or manager_id_set.__contains__(event.source.user_id) == False:
             return
         
         line_bot_api = MessagingApi(api_client)
@@ -68,6 +73,7 @@ def handle_message(event):
             # 獲取圖片內容
             line_bot_blob_api = MessagingApiBlob(api_client)
             message_content = line_bot_blob_api.get_message_content(event.message.id)
+
             try:
                 if(len(group_id_set) == 0):
                     raise Exception('尚無待傳送群組ID')
@@ -123,25 +129,29 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         reply_text = None
+        group_id_set = set(group_id_sheet.col_values(1))
+        manager_id_set = set(manager_id_sheet.col_values(1))
 
         if event.source.type == 'user':
             user_id = event.source.user_id
-            if user_id in authorized_user_set:
+            if user_id in manager_id_set:
                 if event.message.text == '@註銷@':
-                    authorized_user_set.remove(event.source.user_id)
+                    delete_row_by_value(manager_id_sheet, user_id)
                     reply_text = '已註銷上傳管理者'
                 elif event.message.text == '@查看管理者@':
-                    authorized_user_name_array = []
-                    for user_id in authorized_user_set:
-                        authorized_user_name_array.append(line_bot_api.get_profile(user_id).display_name)
-                    reply_text = f'上傳管理者:{",".join(authorized_user_name_array)}'
+                    manager_name_array = []
+                    for user_id in manager_id_set:
+                        manager_name_array.append(line_bot_api.get_profile(user_id).display_name)
+                    reply_text = f'上傳管理者:{",".join(manager_name_array)}'
                 elif event.message.text == '@查看群組@':
                     group_name_array = []
                     for group_id in group_id_set:
                         group_name_array.append(line_bot_api.get_group_summary(group_id).group_name)
                     reply_text = f'群組:{",".join(group_name_array)}'
-            if event.message.text == '@註冊@':
-                authorized_user_set.add(user_id)
+            elif event.message.text == '@註冊@':
+                manager_id_set.add(user_id)
+                # 將用戶輸入的訊息儲存到 Google Sheets
+                manager_id_sheet.append_row([user_id])
                 reply_text = '註冊為上傳管理者'
                 
         if reply_text != None:
@@ -160,7 +170,7 @@ def handle_join(event):
         # 獲取群組 ID
         if event.source.type == "group":
             group_id = event.source.group_id
-            group_id_set.add(group_id)
+            group_id_sheet.append_row([group_id])
             print(f"Bot 已加入群組，群組 ID: {group_id}")
 
     except Exception as e:
@@ -169,14 +179,18 @@ def handle_join(event):
 @line_handler.add(LeaveEvent)
 def handle_leave(event):
     try:
-        # 獲取群組 ID
         if event.source.type == "group":
             group_id = event.source.group_id
-            if group_id in group_id_set:
-                group_id_set.remove(group_id)
+            delete_row_by_value(group_id_sheet, group_id)
             print(f"Bot 已離開群組，群組 ID: {group_id}")
     except Exception as e:
         print(f"Error: {e}")
+
+def delete_row_by_value(worksheet, value):
+    cell = worksheet.find(value)
+    print(f'找到值 {value} 於第 {cell.row} 列')
+    if cell:
+        worksheet.delete_rows(cell.row)
 
 if __name__ == "__main__":
     app.run()

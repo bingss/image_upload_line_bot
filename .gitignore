@@ -4,3 +4,4 @@ __pycache__
 .env
 ngrok.exe
 screenshot.py
+credentials.json
