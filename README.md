@@ -7,10 +7,14 @@
  ## 安裝：
  #### 1.LINE取得Channel_Secret及Channel_Access_Token。
  #### 2.Imgur取得Imgur_Access_Token(需使用POSTMAN：參考https://vocus.cc/article/66628ec1fd89780001f89f7f)。
+ #### 2.GoogleSheet取得憑證(參考[https://vocus.cc/article/66628ec1fd89780001f89f7f](https://www.youtube.com/watch?v=tPfllMdhCUE))。
  #### 3.環境變數設定為:
   - Channel_Access_Token = '取得之Channel_Access_Token'
   - Channel_Secret = '取得之Channel_Secret'
   - Imgur_Access_Token = '取得之Imgur_Access_Token'
+  - Google_Sheet_Url='Google_Sheet連結' ==>開2個工作頁
+  - Google_Credentials = 'Google憑證json(編輯為一行字串)'
+
  #### 4. 開啟Use webhook功能，並部署於雲端，將Webhook settings設為部署服務之網址'{服務網址}/callback'。
  
  ## 使用：
